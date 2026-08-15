@@ -233,15 +233,17 @@ func (s *StreakService) GetSortedCheckinDates(habitID uint) ([]string, error) {
 }
 
 func (s *StreakService) IsDateWithinBackfillWindow(dateStr string) bool {
-	date, err := time.Parse("2006-01-02", dateStr)
+	today := time.Now()
+	date, err := time.ParseInLocation("2006-01-02", dateStr, today.Location())
 	if err != nil {
 		return true
 	}
 
-	today := time.Now()
-	sevenDaysAgo := today.AddDate(0, 0, -6)
+	y, m, d := today.Date()
+	todayDay := time.Date(y, m, d, 0, 0, 0, 0, today.Location())
+	sevenDaysAgo := todayDay.AddDate(0, 0, -7)
 
-	return !date.Before(sevenDaysAgo) && !date.After(today)
+	return !date.Before(sevenDaysAgo) && !date.After(todayDay)
 }
 
 func (s *StreakService) ShouldCheckinToday(habit *models.Habit) (bool, error) {
